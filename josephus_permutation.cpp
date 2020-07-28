@@ -2,18 +2,27 @@
 
 #include <cstdint>
 #include <iterator>
+#include <list>
 #include <numeric>
 #include <vector>
 
 using namespace std;
 
 template <typename RandomIt>
-void MakeJosephusPermutation(RandomIt first, RandomIt last, uint32_t step_size) {
-  vector<typename RandomIt::value_type> pool(first, last);
+void MakeJosephusPermutation(RandomIt first, RandomIt last,
+                             uint32_t step_size) {
+  list<typename RandomIt::value_type> pool;
+  auto start = first;
+  while (start != last) {
+    auto nextIt = next(start);
+    pool.push_back(move(*start));
+    start = nextIt;
+  }
   size_t cur_pos = 0;
+
   while (!pool.empty()) {
-    *(first++) = pool[cur_pos];
-    pool.erase(pool.begin() + cur_pos);
+    *(first++) = move(*next(pool.begin(), cur_pos));
+    pool.erase(next(pool.begin(), cur_pos));
     if (pool.empty()) {
       break;
     }
@@ -50,18 +59,18 @@ void TestIntVector() {
 struct NoncopyableInt {
   int value;
 
-  NoncopyableInt(const NoncopyableInt&) = delete;
-  NoncopyableInt& operator=(const NoncopyableInt&) = delete;
+  NoncopyableInt(const NoncopyableInt &) = delete;
+  NoncopyableInt &operator=(const NoncopyableInt &) = delete;
 
-  NoncopyableInt(NoncopyableInt&&) = default;
-  NoncopyableInt& operator=(NoncopyableInt&&) = default;
+  NoncopyableInt(NoncopyableInt &&) = default;
+  NoncopyableInt &operator=(NoncopyableInt &&) = default;
 };
 
-bool operator == (const NoncopyableInt& lhs, const NoncopyableInt& rhs) {
+bool operator==(const NoncopyableInt &lhs, const NoncopyableInt &rhs) {
   return lhs.value == rhs.value;
 }
 
-ostream& operator << (ostream& os, const NoncopyableInt& v) {
+ostream &operator<<(ostream &os, const NoncopyableInt &v) {
   return os << v.value;
 }
 
